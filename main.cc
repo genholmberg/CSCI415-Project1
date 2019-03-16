@@ -36,11 +36,16 @@ int main(){
 	if(!publicKeyCheck(e,totient))
 		cout << "e can't be public key" << endl;
 
+	BigInteger x = stringToBigInteger(s);
+
+	BigUnsigned d = modinv(x, totient);
+
 
 	cout << "p: " << p << endl;
 	cout << "q: " << q << endl;
 	cout << "n: " << n << endl;
 	cout << "totient: " << totient << endl;
+	cout << "d: " << d << endl;
 
 	return 0;
 }
