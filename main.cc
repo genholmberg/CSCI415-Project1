@@ -14,7 +14,7 @@ bool millerRabin(BigUnsigned n, int k);
 BigInteger randInRange(BigInteger b);
 bool millerTest(BigUnsigned d, BigUnsigned n);
 BigUnsigned largePrime(int l);
-bool publicKeyCheck(BigUnsigned e, BigUnsigned t);
+BigUnsigned publicKeyGen(BigUnsigned t);
 char num[PRIMESIZE];
 bool isPrime = false;
 
@@ -23,7 +23,6 @@ int main(){
 	int length = PRIMESIZE;
 
 	srand(time(NULL));
-	string s = "48112959837082048697";
 
 	BigUnsigned p = largePrime(length);
 	BigUnsigned q = largePrime(length);
@@ -31,34 +30,38 @@ int main(){
 	BigUnsigned n = p * q;
 	BigUnsigned totient = (p-1) * (q-1);
 
-	BigUnsigned e = stringToBigUnsigned(s);
+	BigUnsigned e = publicKeyGen(totient);
 
-	if(!publicKeyCheck(e,totient))
-		cout << "e can't be public key" << endl;
+	BigUnsigned d = modinv(e, totient);
 
-	BigInteger x = stringToBigInteger(s);
-
-	BigUnsigned d = modinv(x, totient);
-
-
+/*
+	// checks correct output
 	cout << "p: " << p << endl;
 	cout << "q: " << q << endl;
 	cout << "n: " << n << endl;
 	cout << "totient: " << totient << endl;
+	cout << "e : " << e << endl;
 	cout << "d: " << d << endl;
-
+*/
 	return 0;
 }
 
-bool publicKeyCheck(BigUnsigned e, BigUnsigned t){
 
+BigUnsigned publicKeyGen(BigUnsigned t){
+
+	BigUnsigned e(2);
 	BigUnsigned result;
+
+	while(e < t){
 
 	result = gcd(e,t);
 
 	if(result == 1)
-		return true;
-	return false;
+		return e;
+	else
+		e++;
+	}
+
 }
 
 
