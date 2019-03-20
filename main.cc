@@ -1,5 +1,6 @@
 #include <string>
 #include <iostream>
+#include <fstream>
 #include <sstream>
 #include <cstdlib>
 #include <ctime>
@@ -15,6 +16,12 @@ BigInteger randInRange(BigInteger b);
 bool millerTest(BigUnsigned d, BigUnsigned n);
 BigUnsigned largePrime(int l);
 BigUnsigned publicKeyGen(BigUnsigned t);
+string get_plaintext(string filename);
+int reduce_modn(int a, int b, int n);
+int get_trigraph(string block);
+string encryption(string pt, int key, BigUnsigned modulus);
+void decryption(string ciphertext);
+string get_ciphertext(string filename);
 char num[PRIMESIZE];
 bool isPrime = false;
 
@@ -43,6 +50,14 @@ int main(){
 	cout << "e : " << e << endl;
 	cout << "d: " << d << endl;
 */
+	// testing will change later
+	string filename = "input.txt";
+	int key = 43;
+	BigUnsigned modulus = 54619;
+	string plaintext = get_plaintext(filename);
+	cout << "Plaintext after 0s added: " << plaintext << endl;
+	string ciphertext = encryption(plaintext, key, modulus);
+	decryption(ciphertext);
 	return 0;
 }
 
@@ -142,3 +157,104 @@ bool millerTest(BigUnsigned d, BigUnsigned n){
 
 	return false;
 }
+
+// may not need this
+int reduce_modn(int a, int trigraph, int n)
+{
+	int c = 1, f = 0, k;
+	string b = "";
+	// to binary
+   while(trigraph != 0)
+	{
+		b = (trigraph%2 == 0 ?"0":"1") + b;
+		trigraph /= 2;
+	}
+
+	k = b.size() - 1;
+
+	for(int i = k; i > 0; i--) {
+		c *= 2;
+		f = (f*f) % n;
+		if(b[i] == '1')
+		{
+			c++;
+			f = (f*a) % n;
+		}
+	}
+	return f;
+}
+
+string encryption(string pt, int key, BigUnsigned modulus)
+{
+	int tri, temp;
+	BigUnsigned ct, quotient;
+	string ciphertext = "", block_ct = "";
+	for(int i = 0; i < 9; i+=3)
+	{
+		tri = get_trigraph(pt.substr(i, 3));
+		ct = modexp(tri, key, modulus);
+		cout << "ciphertext number for block: " << ct << endl;
+		for(int j = 3; j >= 0; j--)
+		{
+			temp = pow(26, j);
+			quotient = ct / temp;
+			quotient = quotient % 26;
+			string stuff = bigUnsignedToString(quotient);
+			int morestuff = stoi(stuff) + 65;
+			block_ct += morestuff;
+		}
+
+		cout << "Block Ciphertext:" << block_ct << endl;
+		ciphertext += block_ct;
+		block_ct = "";
+	}
+	cout << "Ciphertext: " << ciphertext << endl;
+	return ciphertext;
+}
+
+void decryption(string ciphertext)
+{
+	
+}
+
+int get_trigraph(string block)
+{
+	int trigraph = (block[0]-65)*pow(26, 2) + (block[1]-65)*26 + (block[2]-65);
+	cout << "block plaintext: " << block << endl;
+	cout << "trigraph: " << trigraph << endl;
+	return trigraph;
+}
+
+string get_plaintext(string filename)
+{
+	ifstream file (filename);
+	string pt;
+	if (file.is_open())
+  	{
+   	getline(file, pt);
+		cout << "Plain text: " << pt << endl;
+   	file.close();
+  	}
+	
+	// add 0s to the end
+	while (pt.size() < 9)
+	{
+		pt += '0';
+	}
+	
+	return pt;	
+}
+
+string get_ciphertext(string filename)
+{
+	ifstream file (filename);
+	string ct;
+	if (file.is_open())
+  	{
+   	getline(file, ct);
+		cout << "Cipher text: " << ct << endl;
+   	file.close();
+  	}
+	return ct;	
+}
+
