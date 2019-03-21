@@ -17,17 +17,21 @@ bool millerTest(BigUnsigned d, BigUnsigned n);
 BigUnsigned largePrime(int l);
 BigUnsigned publicKeyGen(BigUnsigned t);
 string get_plaintext(string filename);
-int reduce_modn(int a, int b, int n);
 int get_trigraph(string block);
+int get_quadragraph(string block);
 string encryption(string pt, int key, BigUnsigned modulus);
-void decryption(string ciphertext);
+string decryption(string ciphertext, int private_key, BigUnsigned modulus);
 string get_ciphertext(string filename);
+void write_to_file(string temp_file, string ciphertext);
 char num[PRIMESIZE];
 bool isPrime = false;
 
 int main(){
 
 	int length = PRIMESIZE;
+	string input = "input.txt";
+	string encrypted = "encrypted.txt";
+	string output = "output.txt";
 
 	srand(time(NULL));
 
@@ -50,14 +54,17 @@ int main(){
 	cout << "e : " << e << endl;
 	cout << "d: " << d << endl;
 */
-	// testing will change later
-	string filename = "input.txt";
-	int key = 43;
-	BigUnsigned modulus = 54619;
-	string plaintext = get_plaintext(filename);
+// deal with keys and moduluses
+	int key = 13, private_key = 18997;
+	BigUnsigned modulus = 35657;
+	string plaintext = get_plaintext(input);
 	cout << "Plaintext after 0s added: " << plaintext << endl;
 	string ciphertext = encryption(plaintext, key, modulus);
-	decryption(ciphertext);
+	write_to_file(encrypted, ciphertext);
+	string ct = get_ciphertext(encrypted);
+	string pt = decryption(ct, private_key, modulus);
+	write_to_file(output, pt);
+
 	return 0;
 }
 
@@ -158,50 +165,24 @@ bool millerTest(BigUnsigned d, BigUnsigned n){
 	return false;
 }
 
-// may not need this
-int reduce_modn(int a, int trigraph, int n)
-{
-	int c = 1, f = 0, k;
-	string b = "";
-	// to binary
-   while(trigraph != 0)
-	{
-		b = (trigraph%2 == 0 ?"0":"1") + b;
-		trigraph /= 2;
-	}
-
-	k = b.size() - 1;
-
-	for(int i = k; i > 0; i--) {
-		c *= 2;
-		f = (f*f) % n;
-		if(b[i] == '1')
-		{
-			c++;
-			f = (f*a) % n;
-		}
-	}
-	return f;
-}
-
 string encryption(string pt, int key, BigUnsigned modulus)
 {
-	int tri, temp;
+	int tri, power;
 	BigUnsigned ct, quotient;
 	string ciphertext = "", block_ct = "";
 	for(int i = 0; i < 9; i+=3)
 	{
 		tri = get_trigraph(pt.substr(i, 3));
 		ct = modexp(tri, key, modulus);
-		cout << "ciphertext number for block: " << ct << endl;
+		cout << "Ciphertext code for block: " << ct << endl;
 		for(int j = 3; j >= 0; j--)
 		{
-			temp = pow(26, j);
-			quotient = ct / temp;
+			power = pow(26, j);
+			quotient = ct / power;
 			quotient = quotient % 26;
-			string stuff = bigUnsignedToString(quotient);
-			int morestuff = stoi(stuff) + 65;
-			block_ct += morestuff;
+			string temp_block = bigUnsignedToString(quotient);
+			int temp_ct = stoi(temp_block) + 65;
+			block_ct += temp_ct;
 		}
 
 		cout << "Block Ciphertext:" << block_ct << endl;
@@ -212,17 +193,43 @@ string encryption(string pt, int key, BigUnsigned modulus)
 	return ciphertext;
 }
 
-void decryption(string ciphertext)
+string decryption(string ciphertext, int private_key, BigUnsigned modulus)
 {
-	
+	int ct_num, power;
+	BigUnsigned pt, quotient;
+	string plaintext = "", block_pt;
+
+	for(int i = 0; i < 12; i+=4)
+	{
+		ct_num = get_quadragraph(ciphertext.substr(i, 4));
+		pt = modexp(ct_num, private_key, modulus);
+		cout << "Plaintext code for block: " << pt << endl;
+		for(int j = 2; j >= 0; j--)
+		{
+			power = pow(26, j);
+			quotient = pt / power;
+			quotient = quotient % 26;
+			block_pt = bigUnsignedToString(quotient);
+			int temp_pt = stoi(block_pt) + 65;
+			plaintext += temp_pt;
+		}
+	}
+	cout << "Plaintext: " << plaintext << endl;
+	return plaintext;
 }
 
 int get_trigraph(string block)
 {
 	int trigraph = (block[0]-65)*pow(26, 2) + (block[1]-65)*26 + (block[2]-65);
-	cout << "block plaintext: " << block << endl;
-	cout << "trigraph: " << trigraph << endl;
+	cout << "Trigraph: " << trigraph << endl;
 	return trigraph;
+}
+
+int get_quadragraph(string block)
+{
+	int quadragraph = (block[0]-65)*pow(26, 3) + (block[1]-65)*pow(26, 2) + (block[2]-65)*26 + (block[3]-65);
+	cout << "Quadragraph: " << quadragraph << endl;
+	return quadragraph;
 }
 
 string get_plaintext(string filename)
@@ -232,7 +239,7 @@ string get_plaintext(string filename)
 	if (file.is_open())
   	{
    	getline(file, pt);
-		cout << "Plain text: " << pt << endl;
+		cout << "Plaintext read from file: " << pt << endl;
    	file.close();
   	}
 	
@@ -252,9 +259,19 @@ string get_ciphertext(string filename)
 	if (file.is_open())
   	{
    	getline(file, ct);
-		cout << "Cipher text: " << ct << endl;
+		cout << "Ciphertext from file: " << ct << endl;
    	file.close();
   	}
 	return ct;	
+}
+
+void write_to_file(string temp_file, string ciphertext)
+{
+	ofstream file (temp_file);
+	if (file.is_open())
+  	{
+   	file << ciphertext;
+   	file.close();
+  	}
 }
 
