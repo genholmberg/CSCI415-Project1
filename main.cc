@@ -19,8 +19,8 @@ BigUnsigned publicKeyGen(BigUnsigned t);
 string get_plaintext(string filename);
 int get_trigraph(string block);
 int get_quadragraph(string block);
-string encryption(string pt, int key, BigUnsigned modulus);
-string decryption(string ciphertext, int private_key, BigUnsigned modulus);
+string encryption(string pt, BigUnsigned key, BigUnsigned modulus);
+string decryption(string ciphertext, BigUnsigned private_key, BigUnsigned modulus);
 string get_ciphertext(string filename);
 void write_to_file(string temp_file, string ciphertext);
 char num[PRIMESIZE];
@@ -54,9 +54,12 @@ int main(){
 	cout << "e : " << e << endl;
 	cout << "d: " << d << endl;
 */
-// deal with keys and moduluses
-	int key = 13, private_key = 18997;
-	BigUnsigned modulus = 35657;
+
+	/*int key = 13, private_key = 18997;
+	BigUnsigned modulus = 35657;*/
+	BigUnsigned key = e;
+	BigUnsigned private_key = d;
+	BigUnsigned modulus = n;
 	string plaintext = get_plaintext(input);
 	cout << "Plaintext after 0s added: " << plaintext << endl;
 	string ciphertext = encryption(plaintext, key, modulus);
@@ -165,7 +168,7 @@ bool millerTest(BigUnsigned d, BigUnsigned n){
 	return false;
 }
 
-string encryption(string pt, int key, BigUnsigned modulus)
+string encryption(string pt, BigUnsigned key, BigUnsigned modulus)
 {
 	int tri, power;
 	BigUnsigned ct, quotient;
@@ -193,7 +196,7 @@ string encryption(string pt, int key, BigUnsigned modulus)
 	return ciphertext;
 }
 
-string decryption(string ciphertext, int private_key, BigUnsigned modulus)
+string decryption(string ciphertext, BigUnsigned private_key, BigUnsigned modulus)
 {
 	int ct_num, power;
 	BigUnsigned pt, quotient;
