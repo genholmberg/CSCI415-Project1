@@ -8,7 +8,7 @@
 #include "BigIntegerLibrary.hh"
 using namespace std;
 
-const int PRIMESIZE = 100;
+const int PRIMESIZE = 3;
 
 BigUnsigned genRandBigInt(int l);
 bool millerRabin(BigUnsigned n, int k);
@@ -23,12 +23,12 @@ string encryption(string pt, BigUnsigned key, BigUnsigned modulus);
 string decryption(string ciphertext, BigUnsigned private_key, BigUnsigned modulus);
 string get_ciphertext(string filename);
 void write_to_file(string temp_file, string ciphertext);
-char num[PRIMESIZE];
+char num[PRIMESIZE+1];
 bool isPrime = false;
 
 int main(){
 
-	int length = PRIMESIZE;
+	int length = PRIMESIZE+1;
 	string input = "input.txt";
 	string encrypted = "encrypted.txt";
 	string output = "output.txt";
@@ -45,7 +45,7 @@ int main(){
 
 	BigUnsigned d = modinv(e, totient);
 
-/*
+
 	// checks correct output
 	cout << "p: " << p << endl;
 	cout << "q: " << q << endl;
@@ -53,13 +53,12 @@ int main(){
 	cout << "totient: " << totient << endl;
 	cout << "e : " << e << endl;
 	cout << "d: " << d << endl;
-*/
 
-	/*int key = 13, private_key = 18997;
-	BigUnsigned modulus = 35657;*/
+
 	BigUnsigned key = e;
 	BigUnsigned private_key = d;
 	BigUnsigned modulus = n;
+
 	string plaintext = get_plaintext(input);
 	cout << "Plaintext after 0s added: " << plaintext << endl;
 	string ciphertext = encryption(plaintext, key, modulus);
