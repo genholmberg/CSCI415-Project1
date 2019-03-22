@@ -12,7 +12,7 @@ const int PRIMESIZE = 3;
 
 BigUnsigned genRandBigInt(int l);
 bool millerRabin(BigUnsigned n, int k);
-BigInteger randInRange(BigInteger b);
+BigUnsigned randInRange(BigUnsigned b);
 bool millerTest(BigUnsigned d, BigUnsigned n);
 BigUnsigned largePrime(int l);
 BigUnsigned publicKeyGen(BigUnsigned t);
@@ -23,6 +23,7 @@ string encryption(string pt, BigUnsigned key, BigUnsigned modulus);
 string decryption(string ciphertext, BigUnsigned private_key, BigUnsigned modulus);
 string get_ciphertext(string filename);
 void write_to_file(string temp_file, string ciphertext);
+BigUnsigned modexpo(BigUnsigned a, BigUnsigned b, BigUnsigned n);
 char num[PRIMESIZE+1];
 bool isPrime = false;
 
@@ -122,10 +123,10 @@ BigUnsigned genRandBigInt(int l){
 	return f;
 }
 
-BigInteger randInRange(BigInteger b){
+BigUnsigned randInRange(BigUnsigned b){
 
-	BigInteger x(rand());
-	BigInteger y = (x % (b-2)) + 2;
+	BigUnsigned x(rand());
+	BigUnsigned y = (x % (b-2)) + 2;
 
 	return y;
 }
@@ -148,18 +149,18 @@ bool millerRabin(BigUnsigned n, int k){
 
 }
 
-bool millerTest(BigUnsigned d, BigUnsigned n){
+bool millerTest(BigUnsigned b, BigUnsigned n){
 
-	BigInteger a = randInRange(n);
+	BigUnsigned a = randInRange(n);
 
-	BigUnsigned x = modexp(a,d,n);
+	BigUnsigned x = modexpo(a,b,n);
 
 	if(x == 1 || x == n-1)
 		return true;
 
-	while (d != n-1){
-		x = modexp(x, 2, n);
-		d = d << 1;
+	while (b != n-1){
+		x = modexpo(x, 2, n);
+		b = b << 1;
 
 		if(x == 1)
 			return false;
@@ -170,6 +171,26 @@ bool millerTest(BigUnsigned d, BigUnsigned n){
 	return false;
 }
 
+// calcs a^b mod n
+BigUnsigned modexpo(BigUnsigned a, BigUnsigned b, BigUnsigned n){
+
+	int index = b.bitLength();	// get number of bits
+
+	BigUnsigned f = 1;
+
+	for(int i = index; i >= 0; i--){
+
+		f = (f * f) % n;
+
+		if(b.getBit(i) == 1){
+			f = (f * a) % n;
+		}
+
+	}
+
+	return f;
+}
+
 string encryption(string pt, BigUnsigned key, BigUnsigned modulus)
 {
 	int tri, power;
@@ -178,7 +199,7 @@ string encryption(string pt, BigUnsigned key, BigUnsigned modulus)
 	for(int i = 0; i < pt.size() - 1; i+=3)
 	{
 		tri = get_trigraph(pt.substr(i, 3));
-		ct = modexp(tri, key, modulus);
+		ct = modexpo(tri, key, modulus);
 		cout << "Ciphertext code for block: " << ct << endl;
 		for(int j = 3; j >= 0; j--)
 		{
@@ -207,7 +228,7 @@ string decryption(string ciphertext, BigUnsigned private_key, BigUnsigned modulu
 	for(int i = 0; i < ciphertext.size() - 1; i+=4)
 	{
 		ct_num = get_quadragraph(ciphertext.substr(i, 4));
-		pt = modexp(ct_num, private_key, modulus);
+		pt = modexpo(ct_num, private_key, modulus);
 		cout << "Plaintext code for block: " << pt << endl;
 		for(int j = 2; j >= 0; j--)
 		{
