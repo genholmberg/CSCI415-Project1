@@ -59,8 +59,11 @@ int main(){
 	BigUnsigned private_key = d;
 	BigUnsigned modulus = n;
 
+	/*BigUnsigned key = 13;
+	BigUnsigned private_key = 18997;
+	BigUnsigned modulus = 35657;*/
+
 	string plaintext = get_plaintext(input);
-	cout << "Plaintext after 0s added: " << plaintext << endl;
 	string ciphertext = encryption(plaintext, key, modulus);
 	write_to_file(encrypted, ciphertext);
 	string ct = get_ciphertext(encrypted);
@@ -172,7 +175,7 @@ string encryption(string pt, BigUnsigned key, BigUnsigned modulus)
 	int tri, power;
 	BigUnsigned ct, quotient;
 	string ciphertext = "", block_ct = "";
-	for(int i = 0; i < 9; i+=3)
+	for(int i = 0; i < pt.size() - 1; i+=3)
 	{
 		tri = get_trigraph(pt.substr(i, 3));
 		ct = modexp(tri, key, modulus);
@@ -201,7 +204,7 @@ string decryption(string ciphertext, BigUnsigned private_key, BigUnsigned modulu
 	BigUnsigned pt, quotient;
 	string plaintext = "", block_pt;
 
-	for(int i = 0; i < 12; i+=4)
+	for(int i = 0; i < ciphertext.size() - 1; i+=4)
 	{
 		ct_num = get_quadragraph(ciphertext.substr(i, 4));
 		pt = modexp(ct_num, private_key, modulus);
@@ -216,6 +219,10 @@ string decryption(string ciphertext, BigUnsigned private_key, BigUnsigned modulu
 			plaintext += temp_pt;
 		}
 	}
+	while(plaintext.back() == 'A')
+	{
+		plaintext = plaintext.substr(0, plaintext.size() - 1);
+	}
 	cout << "Plaintext: " << plaintext << endl;
 	return plaintext;
 }
@@ -223,6 +230,10 @@ string decryption(string ciphertext, BigUnsigned private_key, BigUnsigned modulu
 int get_trigraph(string block)
 {
 	int trigraph = (block[0]-65)*pow(26, 2) + (block[1]-65)*26 + (block[2]-65);
+	/*for(int i = block.size()-1, j = 0; i >= 0 && j < block.size(); i--, j++)
+	{
+		trigraph += (block[j]-65)*pow(26, i);
+	}*/
 	cout << "Trigraph: " << trigraph << endl;
 	return trigraph;
 }
@@ -230,6 +241,10 @@ int get_trigraph(string block)
 int get_quadragraph(string block)
 {
 	int quadragraph = (block[0]-65)*pow(26, 3) + (block[1]-65)*pow(26, 2) + (block[2]-65)*26 + (block[3]-65);
+	/*for(int i = block.size()-1, j = 0; i >= 0 && j < block.size(); i--, j++)
+	{
+		quadragraph += (block[j]-65)*pow(26, i);
+	}*/ 
 	cout << "Quadragraph: " << quadragraph << endl;
 	return quadragraph;
 }
@@ -246,9 +261,9 @@ string get_plaintext(string filename)
   	}
 	
 	// add 0s to the end
-	while (pt.size() < 9)
+	while (pt.size() % 3 != 0)
 	{
-		pt += '0';
+		pt += 'A';
 	}
 	
 	return pt;	
