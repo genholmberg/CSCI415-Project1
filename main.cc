@@ -55,17 +55,11 @@ int main(){
 	cout << "e : " << e << endl;
 	cout << "d: " << d << endl;
 	
-
-	BigUnsigned public_key = e;
-	BigUnsigned private_key = d;
-	BigUnsigned modulus = n;
-
 	string plaintext = get_plaintext(input);
-cout << "plaintext=" << plaintext << " plaintextsize=" << plaintext.size() << endl; //debug
-	string ciphertext = encryption(plaintext, public_key, modulus);
+	string ciphertext = encryption(plaintext, e, n);
 	write_to_file(encrypted, ciphertext);
 	string ct = get_ciphertext(encrypted);
-	string pt = decryption(ct, private_key, modulus);
+	string pt = decryption(ct, d, n);
 	write_to_file(output, pt);
 
 	return 0;
@@ -199,7 +193,6 @@ string encryption(string pt, BigUnsigned key, BigUnsigned modulus)
 	int tri, power;
 	BigUnsigned ct, quotient;
 	string ciphertext = "", block_ct = "";
-cout << "encryption pt=" << pt << " ptsize=" << pt.size() << endl; //debug
 	for(int i = 0; i < pt.size(); i+=3)
 	{
 		block_ct = "";
@@ -211,7 +204,7 @@ cout << "encryption pt=" << pt << " ptsize=" << pt.size() << endl; //debug
 			ct = ct / 26;
 			block_ct += (char) (quotient.toShort() + 65);
 		}
-
+		cout << "Block cipher: " << block_ct << endl;
 		ciphertext += block_ct;
 	}
 	cout << "Ciphertext: " << ciphertext << endl;
@@ -224,8 +217,7 @@ string decryption(string ciphertext, BigUnsigned private_key, BigUnsigned modulu
 	BigUnsigned pt, quotient;
 	string plaintext = "";
 	char block_pt[4];
-
-cout << "decryption ciphertext=" << ciphertext << " cipertext=" << ciphertext.size() << endl; //debug
+	
 	for(int i = 0; i < ciphertext.size(); i+=4)
 	{
 		ct_num = get_quadragraph(ciphertext.substr(i, 4));
@@ -237,6 +229,7 @@ cout << "decryption ciphertext=" << ciphertext << " cipertext=" << ciphertext.si
 			block_pt[j] = (char)(quotient.toShort() + 65);
 		}
 		block_pt[3] = 0;
+		cout << "Block plaintext: " << block_pt << endl;
 		plaintext += block_pt;
 	}
 	while(plaintext.back() == 'A')
