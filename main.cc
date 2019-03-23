@@ -8,7 +8,7 @@
 #include "BigIntegerLibrary.hh"
 using namespace std;
 
-const int PRIMESIZE = 3;
+const int PRIMESIZE = 3; //3;
 
 BigUnsigned genRandBigInt(int l);
 bool millerRabin(BigUnsigned n, int k);
@@ -29,7 +29,7 @@ bool isPrime = false;
 
 int main(){
 
-	int length = PRIMESIZE+1;
+	int length = PRIMESIZE +1;
 	string input = "input.txt";
 	string encrypted = "encrypted.txt";
 	string output = "output.txt";
@@ -54,18 +54,15 @@ int main(){
 	cout << "totient: " << totient << endl;
 	cout << "e : " << e << endl;
 	cout << "d: " << d << endl;
+	
 
-
-	BigUnsigned key = e;
+	BigUnsigned public_key = e;
 	BigUnsigned private_key = d;
 	BigUnsigned modulus = n;
 
-	/*BigUnsigned key = 13;
-	BigUnsigned private_key = 18997;
-	BigUnsigned modulus = 35657;*/
-
 	string plaintext = get_plaintext(input);
-	string ciphertext = encryption(plaintext, key, modulus);
+cout << "plaintext=" << plaintext << " plaintextsize=" << plaintext.size() << endl; //debug
+	string ciphertext = encryption(plaintext, public_key, modulus);
 	write_to_file(encrypted, ciphertext);
 	string ct = get_ciphertext(encrypted);
 	string pt = decryption(ct, private_key, modulus);
@@ -89,7 +86,7 @@ BigUnsigned publicKeyGen(BigUnsigned t){
 	else
 		e++;
 	}
-
+	return e;
 }
 
 
@@ -112,12 +109,11 @@ BigUnsigned largePrime(int l){
 BigUnsigned genRandBigInt(int l){
 
 	for(int i = 0; i < l; i++){
-		num[i] = (1 + rand() % 9) + '0';
+		num[i] = (rand() % 9) + 1  + '0';
 	}
+	num[PRIMESIZE]=0;
 
 	string str = num;	// turn char array to string
-	str.erase(str.end()-1);	// gets rid of null character at end of string	
-
 	BigUnsigned f = stringToBigUnsigned(str);
 
 	return f;
@@ -128,6 +124,7 @@ BigUnsigned randInRange(BigUnsigned b){
 	BigUnsigned x(rand());
 	BigUnsigned y = (x % (b-2)) + 2;
 
+
 	return y;
 }
 
@@ -137,13 +134,16 @@ bool millerRabin(BigUnsigned n, int k){
 	BigUnsigned d = n-1;
 	
 
-	while (d % 2 == 0)
+	while (d % 2 == 0){
 		d = d >> 1;
+	}
 
 
-	for(int i = 0; i < k; i++)
-		if(!millerTest(d,n))
+	for(int i = 0; i < k; i++){
+		if(!millerTest(d,n)){
 			return false;
+		}
+	}
 
 	return true;
 
@@ -155,17 +155,20 @@ bool millerTest(BigUnsigned b, BigUnsigned n){
 
 	BigUnsigned x = modexpo(a,b,n);
 
-	if(x == 1 || x == n-1)
+	if(x == 1 || x == n-1){
 		return true;
+	}
 
 	while (b != n-1){
 		x = modexpo(x, 2, n);
 		b = b << 1;
 
-		if(x == 1)
+		if(x == 1){
 			return false;
-		if(x == n-1) 
+		}
+		if(x == n-1){
 			return true;
+		}
 	}
 
 	return false;
@@ -196,24 +199,20 @@ string encryption(string pt, BigUnsigned key, BigUnsigned modulus)
 	int tri, power;
 	BigUnsigned ct, quotient;
 	string ciphertext = "", block_ct = "";
-	for(int i = 0; i <= pt.size() - 1; i+=3)
+cout << "encryption pt=" << pt << " ptsize=" << pt.size() << endl; //debug
+	for(int i = 0; i < pt.size(); i+=3)
 	{
+		block_ct = "";
 		tri = get_trigraph(pt.substr(i, 3));
 		ct = modexpo(tri, key, modulus);
-		cout << "Ciphertext code for block: " << ct << endl;
 		for(int j = 3; j >= 0; j--)
 		{
-			power = pow(26, j);
-			quotient = ct / power;
-			quotient = quotient % 26;
-			string temp_block = bigUnsignedToString(quotient);
-			int temp_ct = stoi(temp_block) + 65;
-			block_ct += temp_ct;
+			quotient = ct % 26;
+			ct = ct / 26;
+			block_ct += (char) (quotient.toShort() + 65);
 		}
 
-		cout << "Block Ciphertext:" << block_ct << endl;
 		ciphertext += block_ct;
-		block_ct = "";
 	}
 	cout << "Ciphertext: " << ciphertext << endl;
 	return ciphertext;
@@ -223,22 +222,22 @@ string decryption(string ciphertext, BigUnsigned private_key, BigUnsigned modulu
 {
 	int ct_num, power;
 	BigUnsigned pt, quotient;
-	string plaintext = "", block_pt;
+	string plaintext = "";
+	char block_pt[4];
 
-	for(int i = 0; i <= ciphertext.size() - 1; i+=4)
+cout << "decryption ciphertext=" << ciphertext << " cipertext=" << ciphertext.size() << endl; //debug
+	for(int i = 0; i < ciphertext.size(); i+=4)
 	{
 		ct_num = get_quadragraph(ciphertext.substr(i, 4));
 		pt = modexpo(ct_num, private_key, modulus);
-		cout << "Plaintext code for block: " << pt << endl;
 		for(int j = 2; j >= 0; j--)
 		{
-			power = pow(26, j);
-			quotient = pt / power;
-			quotient = quotient % 26;
-			block_pt = bigUnsignedToString(quotient);
-			int temp_pt = stoi(block_pt) + 65;
-			plaintext += temp_pt;
+			quotient = (pt % 26);
+			pt = pt / 26;
+			block_pt[j] = (char)(quotient.toShort() + 65);
 		}
+		block_pt[3] = 0;
+		plaintext += block_pt;
 	}
 	while(plaintext.back() == 'A')
 	{
@@ -250,14 +249,24 @@ string decryption(string ciphertext, BigUnsigned private_key, BigUnsigned modulu
 
 int get_trigraph(string block)
 {
-	int trigraph = (block[0]-65)*pow(26, 2) + (block[1]-65)*26 + (block[2]-65);
+	int trigraph = 0;
+
+	for (int i = 2; i >= 0; i--){
+		int nbr = block[i] - 65;
+		trigraph += nbr * pow(26, 2-i);
+	}
 	cout << "Trigraph: " << trigraph << endl;
 	return trigraph;
 }
 
 int get_quadragraph(string block)
 {
-	int quadragraph = (block[0]-65)*pow(26, 3) + (block[1]-65)*pow(26, 2) + (block[2]-65)*26 + (block[3]-65);
+	int quadragraph = 0;
+
+	for (int i = 3; i >= 0; i--){
+		int nbr = block[i] - 65;
+		quadragraph += nbr * pow(26, i);
+	}
 	cout << "Quadragraph: " << quadragraph << endl;
 	return quadragraph;
 }
@@ -304,4 +313,3 @@ void write_to_file(string temp_file, string ciphertext)
    	file.close();
   	}
 }
-
