@@ -54,13 +54,12 @@ int main(){
 	cout << "e : " << e << endl;
 	cout << "d: " << d << endl;
 	
-	string plaintext = get_plaintext(input);
-	string ciphertext = encryption(plaintext, e, n);
-	write_to_file(encrypted, ciphertext);
-	string ct = get_ciphertext(encrypted);
-	string pt = decryption(ct, d, n);
-	write_to_file(output, pt);
-
+	string plaintext = get_plaintext(input); // gets plaintext from file
+	string ciphertext = encryption(plaintext, e, n); // encrypts text in file
+	write_to_file(encrypted, ciphertext); // writes encrytped text to encrypted.txt
+	string ct = get_ciphertext(encrypted); // gets ciphertext from encrypted.txt
+	string pt = decryption(ct, d, n); // decrypts text
+	write_to_file(output, pt); // writes decrypted message to output.txt
 	return 0;
 }
 
@@ -212,9 +211,6 @@ bool millerTest(BigUnsigned b, BigUnsigned n){
 }// end millerTest
 
 
-<<<<<<< HEAD
-// calculates a^b mod n
-=======
 
 /*
 * This method performs modular arithmetic on large integers (a^b mod n).  This method was taken from Appendix A
@@ -223,7 +219,6 @@ bool millerTest(BigUnsigned b, BigUnsigned n){
 * Pre: a, b, and n must already be initialized.
 * Post: Returns the result of a^b mod n.
 */
->>>>>>> ce4e7da486606db08eebde333207d0db2cee484b
 BigUnsigned modexpo(BigUnsigned a, BigUnsigned b, BigUnsigned n){
 
 	int index = b.bitLength();	// get number of bits for b
@@ -243,34 +238,50 @@ BigUnsigned modexpo(BigUnsigned a, BigUnsigned b, BigUnsigned n){
 	return f;
 }// end modexpo
 
-// encrypts the plain text one block (3 bytes) at a time, concatenates the 4 bytes cipher text blocks together and returns the whole ciphertext
-// Pre:
+/*
+* This method encrypts the plaintext one 3 byte block at a time
+* then concatenates the ciphertext blocks together.
+* Params: This method takes in a string which holds the plaintext read in from the file,
+*         the key used to encrypt the file (e), and n as BigUnsigneds.
+* Pre: M^e mod n  = c has to be smaller than 26^4 for the decryption algorithm to work.
+* Post: Returns the ciphertext as a string.
+*/
 string encryption(string pt, BigUnsigned key, BigUnsigned modulus)
 {
 	BigUnsigned tri, power;
 	BigUnsigned ct, quotient;
 	string ciphertext = "", block_ct = "";
+	// Breaks plaintext into blocks of 3 bytes and encrypts them
 	for(int i = 0; i < pt.size(); i+=3)
 	{
-		string block_pt = pt.substr(i, 3);
-		tri = get_trigraph(block_pt);
-		ct = modexpo(tri, key, modulus);
+		string block_pt = pt.substr(i, 3); // get block
+		tri = get_trigraph(block_pt); // gets trigraph of the block
+		ct = modexpo(tri, key, modulus); // encrypts the block
 		block_ct = "";
 
+		// converts ciphertext code to letters
 		for(int j = 3; j >= 0; j--)
 		{
 			BigUnsigned base = 26;
 			quotient = ct % base;
-			ct = (ct - quotient) / base;;
-			block_ct += (char) (quotient.toInt() + 65);
+			ct = (ct - quotient) / base;
+			block_ct += (char) (quotient.toInt() + 65); // adds letter to ciphertext block
 		}
 		cout << "Block ciphertext: " << block_ct << endl;
-		ciphertext += block_ct;
+		ciphertext += block_ct; // adds ciphertext block to ciphertext as a whole
 	}
 	cout << "Ciphertext: " << ciphertext << endl;
 	return ciphertext;
-}
+} // end of encryption
 
+/*
+* This method decrypts the ciphertext one 4 byte block at a time
+* then concatenates the plaintext blocks together.
+* Params: This method takes in a string which holds the ciphertext
+*         read in from the file, the key used to decrypt the file (d), and n as BigUnsigneds.
+* Pre: None
+* Post: Returns the plaintext as a string.
+*/
 string decryption(string ciphertext, BigUnsigned private_key, BigUnsigned modulus)
 {
 	BigUnsigned ct_num, power;
@@ -278,99 +289,135 @@ string decryption(string ciphertext, BigUnsigned private_key, BigUnsigned modulu
 	string plaintext = "";
 	char block_pt[4];
 
+	// Breaks the ciphertext into blocks of 4 bytes and decrypts those blocks
 	for(int i = 0; i < ciphertext.size(); i+=4)
 	{
-		string block_ct = ciphertext.substr(i, 4);
-		ct_num = get_quadragraph(block_ct);
-		pt = modexpo(ct_num, private_key, modulus);
+		string block_ct = ciphertext.substr(i, 4); // gets block
+		ct_num = get_quadragraph(block_ct); // gets the quaragraph of the block
+		pt = modexpo(ct_num, private_key, modulus); // decrypts the block
+		
+		// converts the ciphertext code into letters
 		for(int j = 2; j >= 0; j--)
 		{
 			BigUnsigned base = 26;
 			quotient = (pt % base);
 			pt = (pt - quotient) / base;
-			block_pt[j] = (char)(quotient.toInt() + 65);
+			block_pt[j] = (char)(quotient.toInt() + 65); // adds the plaintext letter to the plaintext block
 		}
 		block_pt[3] = 0;
 		cout << "Block plaintext: " << block_pt << endl;
-		plaintext += block_pt;
+		plaintext += block_pt; // adds the block to the plaintext block to the plaintext as a whole
 	}
+
+	// removes any As (0s) to the end of thee plaintext
 	while(plaintext[plaintext.size()-1] == 'A')
 	{
 		plaintext = plaintext.substr(0, plaintext.size() - 1);
 	}
 	cout << "Plaintext: " << plaintext << endl;
 	return plaintext;
-}
+} // end of decryption
 
+/*
+* This method converts the letters of the plaintext to the plaintext code.
+* the code is in base 26.
+* Params: This method takes in a string of 3 letters.
+* Pre: block is 3 bytes long
+* Post: Returns the trigraph as a BigUnsigned.
+*/
 BigUnsigned get_trigraph(string block)
 {
 	BigUnsigned trigraph = 0;
 
 	for (int i = 0; i <= 2; i++){
-		BigUnsigned nbr(block[i] - 65);
-		int powerInt = pow(26, 2-i);
-		BigUnsigned power(powerInt);
-		trigraph += nbr * power;
+		BigUnsigned nbr(block[i] - 65); // converts ASCII to 0-25 for letters
+		int powerInt = pow(26, 2-i); // gets 26^2-i for multiplication.
+		BigUnsigned power(powerInt); // converts int to BigUnsigned for multiplication.
+		trigraph += nbr * power; // converts number to base 26
 	}
 	cout << "Trigraph: " << trigraph << endl;
 	return trigraph;
-}
+} // end of get_trigraph
 
+/*
+* This method converts the letters of the ciphertext to the ciphertext code.
+* the code is in base 26.
+* Params: This method takes in a string of 4 letters.
+* Pre: block is 4 bytes long
+* Post: Returns the quadragraph as a BigUnsigned.
+*/
 BigUnsigned get_quadragraph(string block)
 {
 	BigUnsigned quadragraph = 0;
 
 	for (int i = 0; i <= 3; i++){
 		BigUnsigned nbr(block[i] - 65);
-		int powerInt = pow(26, i);
-		BigUnsigned power(powerInt);
-		BigUnsigned addval = nbr * power;
-		quadragraph += addval;
+		int powerInt = pow(26, i); // converts ASCII to 0-25 for letters
+		BigUnsigned power(powerInt); // gets 26^2-i for multiplication.
+		BigUnsigned addval = nbr * power; // converts number to base 26
+		quadragraph += addval; // adds to the quadragraph
 	}
 	cout << "Quadragraph: " << quadragraph << endl;
 	return quadragraph;
-}
+} // end of get_quadragraph
 
+/*
+* This method gets the plaintext from the input file (input.txt).
+* Params: This method takes in a string of the name of the input file.
+* Pre: input file name is valid and path is correct.
+* Post: Returns the plaintext in the file as a string.
+*/
 string get_plaintext(string filename)
 {
 	ifstream file (filename.c_str());
 	string pt;
 	if (file.is_open())
   	{
-   	getline(file, pt);
+   	getline(file, pt); // gets plaintext from file
 		cout << "\nPlaintext read from file: " << pt << endl;
    	file.close();
   	}
 	
-	// add 0s to the end
+	// add 0s (As) to the end of the plaintext if it is not divisible by three
 	while (pt.size() % 3 != 0)
 	{
 		pt += 'A';
 	}
 	
 	return pt;	
-}
+} // end of get_plaintext
 
+/*
+* This method gets the ciphertext from the encrypted file (encrypted.txt).
+* Params: This method takes in a string of the name of the encrypted file.
+* Pre: input file name is valid and path is correct.
+* Post: Returns the plaintciphertextext in the file as a string.
+*/
 string get_ciphertext(string filename)
 {
 	ifstream file (filename.c_str());
 	string ct;
 	if (file.is_open())
   	{
-   	getline(file, ct);
+   	getline(file, ct); // gets the ciphertext
 		cout << "\nCiphertext from file: " << ct << endl;
    	file.close();
   	}
 	return ct;	
-}
+} // end of get_ciphertext
 
+/*
+* This method gets writes a string to a file
+* Params: This method takes in a string of the name of the file to be written to and the text which will be written to the file as a string.
+* Pre: input file name is valid and path is correct.
+* Post: None.
+*/
 void write_to_file(string temp_file, string ciphertext)
 {
 	ofstream file (temp_file.c_str());
 	if (file.is_open())
   	{
-   	file << ciphertext;
+   	file << ciphertext; // writes the ciphertext/plaintext to the encrypted/output file
    	file.close();
   	}
-}
-
+} // end of write_to_file
