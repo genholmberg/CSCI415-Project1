@@ -8,7 +8,7 @@
 #include "BigIntegerLibrary.hh"
 using namespace std;
 
-const int PRIMESIZE = 5; //3;
+const int PRIMESIZE = 100;
 
 BigUnsigned genRandBigInt(int l);
 bool millerRabin(BigUnsigned n, int k);
@@ -288,7 +288,7 @@ string decryption(string ciphertext, BigUnsigned private_key, BigUnsigned modulu
 		cout << "Block plaintext: " << block_pt << endl;
 		plaintext += block_pt;
 	}
-	while(plaintext.back() == 'A')
+	while(plaintext[plaintext.size()-1] == 'A')
 	{
 		plaintext = plaintext.substr(0, plaintext.size() - 1);
 	}
@@ -327,7 +327,7 @@ BigUnsigned get_quadragraph(string block)
 
 string get_plaintext(string filename)
 {
-	ifstream file (filename);
+	ifstream file (filename.c_str());
 	string pt;
 	if (file.is_open())
   	{
@@ -347,7 +347,7 @@ string get_plaintext(string filename)
 
 string get_ciphertext(string filename)
 {
-	ifstream file (filename);
+	ifstream file (filename.c_str());
 	string ct;
 	if (file.is_open())
   	{
@@ -360,7 +360,7 @@ string get_ciphertext(string filename)
 
 void write_to_file(string temp_file, string ciphertext)
 {
-	ofstream file (temp_file);
+	ofstream file (temp_file.c_str());
 	if (file.is_open())
   	{
    	file << ciphertext;
