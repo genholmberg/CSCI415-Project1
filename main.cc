@@ -167,7 +167,7 @@ bool millerTest(BigUnsigned b, BigUnsigned n){
 	return false;
 }
 
-// calcs a^b mod n
+// calculates a^b mod n
 BigUnsigned modexpo(BigUnsigned a, BigUnsigned b, BigUnsigned n){
 
 	int index = b.bitLength();	// get number of bits
@@ -187,6 +187,8 @@ BigUnsigned modexpo(BigUnsigned a, BigUnsigned b, BigUnsigned n){
 	return f;
 }
 
+// encrypts the plain text one block (3 bytes) at a time, concatenates the 4 bytes cipher text blocks together and returns the whole ciphertext
+// Pre:
 string encryption(string pt, BigUnsigned key, BigUnsigned modulus)
 {
 	BigUnsigned tri, power;
