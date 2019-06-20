@@ -1,3 +1,10 @@
+/*
+* CSCI 415
+* Sean Anderson
+* Michael Miller
+* Genavieve Holmberg
+* Nathan Reichert
+*/
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -8,7 +15,7 @@
 #include "BigIntegerLibrary.hh"
 using namespace std;
 
-const int PRIMESIZE = 100;
+const int PRIMESIZE = 2;
 
 BigUnsigned genRandBigInt(int l);
 bool millerRabin(BigUnsigned n, int k);
@@ -353,7 +360,7 @@ BigUnsigned get_quadragraph(string block)
 	for (int i = 0; i <= 3; i++){
 		BigUnsigned nbr(block[i] - 65);
 		int powerInt = pow(26, i); // converts ASCII to 0-25 for letters
-		BigUnsigned power(powerInt); // gets 26^2-i for multiplication.
+		BigUnsigned power(powerInt); // gets 26^i for multiplication.
 		BigUnsigned addval = nbr * power; // converts number to base 26
 		quadragraph += addval; // adds to the quadragraph
 	}
